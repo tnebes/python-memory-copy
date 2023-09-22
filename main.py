@@ -6,27 +6,34 @@ import os
 from validator import File_Directory_Validator
 from validator import Slice_Size_Validator
 from constants import Constants
+from extractor import Extractor
+from slicer import Slicer
 
 class Main():
 
     def __init__(self) -> None:
-        pass
         self.__set_up_logging()
         logging.info("Starting program")
         self.__run()
 
     def __run(self) -> None:
-        
-        path = self.__get_path()
-        max_size = self.__get_max_size()
-        logging.debug(f"Path: {path}, Max Size: {max_size}MB")
-
+        try:
+            path = self.__get_path()
+            max_size = self.__get_max_size()
+            logging.debug(f"Path: {path}, Max Size: {max_size}MB")
+            contents_location = Extractor(path).extract()
+            print("Extraction complete")
+        except Exception as e:
+            logging.error(e)
+            print(e)
+            return
 
         print("Done!")
         
     def __get_path(self) -> str:
         print("Enter the absolute path to a compressed file that you wish to slice:")
-        path = input()
+        # path = input()
+        path = r"C:\Users\tnebes\Desktop\dev\git\python-memory-copy\MechJeb2-2.14.0.0.zip"
         try:
             file_validator = File_Directory_Validator(path)
             if file_validator.validate_zip():

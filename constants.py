@@ -6,3 +6,5 @@ class Constants:
     MAXIMUM_FILE_SIZE = 1000
     LOG_FOLDER_NAME = "log"
     LOG_FILE_NAME = "log.log"
+    EXTRACTED_FOLDER_NAME = "extracted"
+    
