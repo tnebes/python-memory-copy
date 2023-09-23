@@ -1,18 +1,19 @@
-import sys
-sys.path.append('../src')
-
 import logging
 import os
+import shutil
+
 from validator import File_Directory_Validator
 from validator import Slice_Size_Validator
 from constants import Constants
 from extractor import Extractor
 from slicer import Slicer
 
+
 class Main():
 
     def __init__(self) -> None:
         self.__set_up_logging()
+        self.contents_location = ""
         logging.info("Starting program")
         self.__run()
 
@@ -21,14 +22,17 @@ class Main():
             path = self.__get_path()
             max_size = self.__get_max_size()
             logging.debug(f"Path: {path}, Max Size: {max_size}MB")
-            contents_location = Extractor(path).extract()
+            self.contents_location = Extractor(path).extract()
             print("Extraction complete")
+
+            Slicer().slice(self.contents_location, max_size)
+
+            self.__delete_extracted_folder
+            print("Done!")
         except Exception as e:
-            logging.error(e)
+            logging.error(f"Error while slicing {path}", e)
             print(e)
             return
-
-        print("Done!")
         
     def __get_path(self) -> str:
         print("Enter the absolute path to a compressed file that you wish to slice:")
@@ -45,7 +49,8 @@ class Main():
 
     def __get_max_size(self) -> int:
         print("Enter the maximum size of each uncompressed slice in MB:")
-        max_size = input()
+        # max_size = input()
+        max_size = 2
         try:
             size_validator = Slice_Size_Validator(max_size)
             if size_validator.validate_number():
@@ -53,7 +58,7 @@ class Main():
         except Exception as e:
             logging.error(e)
             print(e)
-            return self.__get_max_size
+            return self.__get_max_size()
         
     def __set_up_logging(self) -> None:
         log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), Constants.LOG_FOLDER_NAME)
@@ -67,6 +72,15 @@ class Main():
             filename=log_file
         )
         logging.debug("Logging set up")
+
+    def __delete_extracted_folder(self):
+        print(f"Deleting contents in {Constants.EXTRACTED_FOLDER_NAME} folder")
+        if os.path.exists(self.contents_location):
+            shutil.rmtree(self.contents_location)
+            logging.debug(f"{Constants.EXTRACTED_FOLDER_NAME} folder deleted")
+        else:
+            logging.debug(f"{Constants.EXTRACTED_FOLDER_NAME} folder does not exist")
+
 
 if __name__ == "__main__":
     Main()
