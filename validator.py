@@ -2,7 +2,7 @@ import os
 from exceptions import NotFileError
 from constants import Constants
 
-class File_Directory_Validator:
+class FileDirectoryValidator:
 
     def __init__(self, path) -> None:
         self.path = path
@@ -39,7 +39,7 @@ class File_Directory_Validator:
         raise NotFileError(f"{self.path} is not a zip file")
     
 
-class Slice_Size_Validator:
+class SliceSizeValidator:
 
     def __init__(self, number) -> None:
         self.number = number

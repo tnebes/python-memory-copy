@@ -16,6 +16,7 @@ class Slicer:
 
     def slice(self, path, max_size) -> None:
         logging.debug(f"Slicing {path} into {max_size}MB slices")
+        print(f"Slicing {path} into {max_size}MB slices")
         package_name = os.path.basename(path)
         self.save_location = os.path.join(os.path.dirname(os.path.abspath(__file__)), Constants.OUTPUT_FOLDER_NAME, package_name)
         try:
@@ -26,7 +27,7 @@ class Slicer:
                     if (len(file_directory) == len(path)):
                         relative_path = file
                     else:
-                        relative_path = f"{file_directory[len(path) + 1:]}\{file}"
+                        relative_path = fr"{file_directory[len(path) + 1:]}\{file}"
 
                     with open(os.path.join(file_directory, file), "rb") as file:
                         file_contents = io.BytesIO(file.read())
@@ -34,7 +35,9 @@ class Slicer:
                         self.current_slice_size += SizeCalculator().calculate_size_in_mb(file_contents.getbuffer().nbytes)
 
                     if self.current_slice_size >= max_size:
-                        logging.info(f"Reached maximum slice size of {max_size}MB. Creating new package")
+                        new_package_name = self.__generate_package_name(package_name, iteration)
+                        logging.info(f"\tReached maximum slice size of {max_size}MB. Creating {new_package_name}")
+                        print(f"\tReached maximum slice size of {max_size}MB. Creating {new_package_name}")
                         self.__save_as_package(package_name, iteration, self.collected_files)
                         iteration += 1
                         self.current_slice_size = 0
@@ -47,21 +50,21 @@ class Slicer:
 
     def __save_as_package(self, package_name, iteration, files) -> None:
         try:
-            logging.info(files)
             package_name = self.__generate_package_name(package_name, iteration)
             save_file_path = os.path.join(self.save_location, package_name)
 
-            logging.info(f"Saving package {package_name}")
             if not os.path.exists(self.save_location):
                 os.makedirs(self.save_location)
 
-            with zipfile.ZipFile(save_file_path, "w") as zip_file:
+            logging.info(f"\t\tSaving package {package_name} to {save_file_path}")
+
+            with zipfile.ZipFile(save_file_path, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
                 for file_name, file_contents in files.items():
                     zip_file.writestr(file_name, file_contents.getbuffer())
 
-            logging.info(f"Package {package_name} saved successfully at {save_file_path}")
+            logging.info(f"\t\tPackage {package_name} saved successfully at {save_file_path}")
         except Exception as e:
-            logging.error(f"Error while saving package {package_name}", e)
+            logging.error(f"\t\tError while saving package {package_name}", e)
             print(e)
             raise e
 
